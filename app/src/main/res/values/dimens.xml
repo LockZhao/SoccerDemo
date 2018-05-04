@@ -1,0 +1,6 @@
+<resources>
+    <dimen name="point_size">10dp</dimen>
+    <dimen name="ring_radius">5dp</dimen>
+    <dimen name="ring_thickness">3dp</dimen>
+    <dimen name="point_view_size">50dp</dimen>
+</resources>

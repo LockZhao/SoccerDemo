@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:innerRadius="@dimen/ring_radius"
+       android:shape="ring"
+       android:thickness="@dimen/ring_thickness"
+       android:useLevel="false">
+
+    <solid android:color="@color/start_control_point"/>
+    
+</shape>

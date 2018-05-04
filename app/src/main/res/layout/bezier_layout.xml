@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <demo.klock.soccer.view.PathView
+        android:id="@+id/path_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <ImageView
+        android:id="@+id/iv_start"
+        android:layout_width="@dimen/point_view_size"
+        android:layout_height="@dimen/point_view_size"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:scaleType="center"
+        android:src="@drawable/shape_start_point"/>
+
+    <ImageView
+        android:id="@+id/iv_end"
+        android:layout_width="@dimen/point_view_size"
+        android:layout_height="@dimen/point_view_size"
+        android:layout_centerVertical="true"
+        android:scaleType="center"
+        android:src="@drawable/shape_end_point"/>
+
+    <ImageView
+        android:id="@+id/iv_start_control"
+        android:layout_width="@dimen/point_view_size"
+        android:layout_height="@dimen/point_view_size"
+        android:layout_alignLeft="@id/iv_start"
+        android:scaleType="center"
+        android:src="@drawable/shape_start_control_point"/>
+
+    <ImageView
+        android:id="@+id/iv_end_control"
+        android:layout_width="@dimen/point_view_size"
+        android:layout_height="@dimen/point_view_size"
+        android:layout_alignLeft="@id/iv_end"
+        android:scaleType="center"
+        android:src="@drawable/shape_end_control_point"/>
+
+    <TextView
+        android:id="@+id/tv_ratio"
+        android:textSize="18dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>
