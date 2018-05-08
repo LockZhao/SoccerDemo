@@ -43,11 +43,4 @@
         android:scaleType="center"
         android:src="@drawable/shape_end_control_point"/>
 
-    <TextView
-        android:id="@+id/tv_ratio"
-        android:textSize="18dp"
-        android:layout_centerHorizontal="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
 </RelativeLayout>

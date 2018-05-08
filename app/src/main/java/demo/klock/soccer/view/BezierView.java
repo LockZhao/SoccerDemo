@@ -5,15 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import java.math.BigDecimal;
 
 import soccer.klock.demo.soccerdemo.R;
 
@@ -29,7 +25,6 @@ public class BezierView extends RelativeLayout {
     private ImageView ivStart, ivEnd, ivStartControl, ivEndControl;
     private RelativeLayout       rlContent;
     private PathView             pathView;
-    private TextView             tvRatio;
     private OnPathUpdateListener listener;
 
     public interface OnPathUpdateListener {
@@ -62,7 +57,6 @@ public class BezierView extends RelativeLayout {
         ivEndControl = view.findViewById(R.id.iv_end_control);
         rlContent = view.findViewById(R.id.rl_content);
         pathView = view.findViewById(R.id.path_view);
-        tvRatio = view.findViewById(R.id.tv_ratio);
 
         dragHelper = ViewDragHelper.create(rlContent, 1f, new ViewDragHelper.Callback() {
 
@@ -120,18 +114,24 @@ public class BezierView extends RelativeLayout {
                     finalLeft = getWidth() - viewWidth;
                 }
                 dragHelper.settleCapturedViewAt(finalLeft, finalTop);
-                String[] startRatio = getViewRatio(ivStartControl);
-                String[] endRatio = getViewRatio(ivEndControl);
-                String str = String.format("(%s,%s,%s,%s)", startRatio[0], startRatio[1], endRatio[0], endRatio[1]);
-                Log.i("ratio", str);
-                if (listener != null) {
-                    listener.onPathUpdate(getCenterPoint(ivStart)[0], getCenterPoint(ivStart)[1],
-                            getCenterPoint(ivStartControl)[0], getCenterPoint(ivStartControl)[1],
-                            getCenterPoint(ivEnd)[0], getCenterPoint(ivEnd)[1],
-                            getCenterPoint(ivEndControl)[0], getCenterPoint(ivEndControl)[1]);
-                }
+                updatePath();
             }
         });
+    }
+
+    private void updatePath () {
+        if (listener != null) {
+            listener.onPathUpdate(getCenterPoint(ivStart)[0], getCenterPoint(ivStart)[1],
+                    getCenterPoint(ivStartControl)[0], getCenterPoint(ivStartControl)[1],
+                    getCenterPoint(ivEnd)[0], getCenterPoint(ivEnd)[1],
+                    getCenterPoint(ivEndControl)[0], getCenterPoint(ivEndControl)[1]);
+        }
+    }
+
+    @Override
+    protected void onLayout (boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+        refreshPathView();
     }
 
     @Override
@@ -145,16 +145,6 @@ public class BezierView extends RelativeLayout {
                 getCenterPoint(ivStartControl)[0], getCenterPoint(ivStartControl)[1],
                 getCenterPoint(ivEnd)[0], getCenterPoint(ivEnd)[1],
                 getCenterPoint(ivEndControl)[0], getCenterPoint(ivEndControl)[1]);
-    }
-
-    private String[] getViewRatio (View v) {
-        String[] ratios = new String[2];
-        double xDelta = ivEnd.getLeft() - ivStart.getLeft();
-        double yDelta = ivEnd.getTop() - ivStart.getTop();
-        double delta = Math.sqrt(Math.pow(xDelta, 2) + Math.pow(yDelta, 2));
-        ratios[0] = formatDouble((v.getLeft() - ivStart.getLeft()) / delta);
-        ratios[1] = formatDouble((v.getTop() - ivStart.getTop()) / delta);
-        return ratios;
     }
 
     private int[] getCenterPoint (View v) {
@@ -177,7 +167,4 @@ public class BezierView extends RelativeLayout {
         return true;
     }
 
-    public String formatDouble (double v) {
-        return new BigDecimal(v).setScale(3, BigDecimal.ROUND_HALF_UP).toString();
-    }
 }
