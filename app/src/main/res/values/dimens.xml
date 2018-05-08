@@ -3,4 +3,5 @@
     <dimen name="ring_radius">5dp</dimen>
     <dimen name="ring_thickness">3dp</dimen>
     <dimen name="point_view_size">50dp</dimen>
+    <dimen name="soccer_size">40dp</dimen>
 </resources>

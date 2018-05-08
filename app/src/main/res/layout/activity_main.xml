@@ -7,6 +7,11 @@
     android:padding="5dp"
     tools:context="demo.klock.soccer.MainActivity">
 
+    <demo.klock.soccer.view.SoccerView
+        android:id="@+id/soccer_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <demo.klock.soccer.view.BezierView
         android:id="@+id/bazier_view"
         android:layout_width="match_parent"
@@ -16,8 +21,8 @@
         android:id="@+id/iv_soccer"
         android:src="@mipmap/img_soccer"
         android:visibility="invisible"
-        android:layout_width="40dp"
-        android:layout_height="40dp"/>
+        android:layout_width="@dimen/soccer_size"
+        android:layout_height="@dimen/soccer_size"/>
 
     <TextView
         android:id="@+id/tv_start"
@@ -35,4 +40,5 @@
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 </RelativeLayout>
