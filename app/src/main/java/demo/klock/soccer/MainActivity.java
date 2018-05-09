@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
@@ -79,22 +80,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setPathPoint (PathPoint newLoc) {
-        soccerView.setPathPoint(newLoc);
-    }
-
     private void startAnimatorPath (View view, String propertyName, AnimatorPath path) {
-        ObjectAnimator anim1 = ObjectAnimator.ofObject(this, propertyName, new PathEvaluator(), path.getPoints().toArray());
+        ObjectAnimator anim1 = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), path.getPoints().toArray());
         anim1.setInterpolator(new DecelerateInterpolator());
-        anim1.addListener(new Animator.AnimatorListener() {
+        ObjectAnimator anim2 = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
+        anim2.setInterpolator(new LinearInterpolator());
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(anim1, anim2);
+        animatorSet.setDuration(2000);
+        animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart (Animator animation) {
+                Log.i("TIME_INTERVAL", "onAnimationStart: ");
                 bazierView.setVisibility(View.GONE);
                 soccerView.setAnimStart(true);
             }
 
             @Override
             public void onAnimationEnd (Animator animation) {
+                Log.i("TIME_INTERVAL", "onAnimationEnd: ");
                 bazierView.setVisibility(View.VISIBLE);
                 soccerView.setAnimStart(false);
             }
@@ -110,12 +115,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-//        ObjectAnimator anim2 = ObjectAnimator.ofFloat(ivSoccer, "rotation", 0, 3600);
-//        anim2.setInterpolator(new LinearInterpolator());
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(anim1/*, anim2*/);
-        animatorSet.setDuration(2000);
         animatorSet.start();
 
     }
