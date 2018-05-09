@@ -23,9 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BezierView   bazierView;
     private SoccerView   soccerView;
-    private TextView     tvStart;
+    private TextView     tvStart, tvScore, tvRatio;
     private AnimatorPath path;
-    private TextView     tvRatio;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -34,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
         bazierView = findViewById(R.id.bazier_view);
         soccerView = findViewById(R.id.soccer_view);
         tvStart = findViewById(R.id.tv_start);
+        tvStart = findViewById(R.id.tv_start);
         tvRatio = findViewById(R.id.tv_ratio);
+        tvScore = findViewById(R.id.tv_score);
 
         /*soccerView.setZOrderOnTop(true);
         soccerView.getHolder().setFormat(PixelFormat.TRANSLUCENT);*/
@@ -66,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        initStartBtn();
+    }
+
+    private void initStartBtn () {
+        tvStart.setText("Start");
         tvStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
@@ -88,17 +94,17 @@ public class MainActivity extends AppCompatActivity {
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart (Animator animation) {
-                onAnimationBegin();
+                onAnimationBegin(animation);
             }
 
             @Override
             public void onAnimationEnd (Animator animation) {
-                onAnimationStop();
+                onAnimationStop(animation);
             }
 
             @Override
             public void onAnimationCancel (Animator animation) {
-                onAnimationStop();
+                onAnimationStop(animation);
             }
 
             @Override
@@ -109,13 +115,29 @@ public class MainActivity extends AppCompatActivity {
         animatorSet.start();
     }
 
-    private void onAnimationBegin () {
+    private void onAnimationBegin (final Animator animation) {
         Log.i("TIME_INTERVAL", "onAnimationStart: ");
+        final long startTime = System.currentTimeMillis();
         bazierView.setPathVisible(View.INVISIBLE);
         soccerView.setAnimStart(true);
+
+        tvScore.setVisibility(View.GONE);
+        tvStart.setText("Kick！！");
+        tvStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                double score = 100 - Math.abs(System.currentTimeMillis() - startTime - DURATION) / 1.5d;
+                tvScore.setText("Score: " + new BigDecimal(score < 0 ? 0 : score).setScale(1, BigDecimal.ROUND_HALF_UP).toString());
+                tvScore.setVisibility(View.VISIBLE);
+                if (animation.isRunning()) {
+                    animation.cancel();
+                }
+                initStartBtn();
+            }
+        });
     }
 
-    private void onAnimationStop () {
+    private void onAnimationStop (Animator animation) {
         Log.i("TIME_INTERVAL", "onAnimationStop: ");
         bazierView.setPathVisible(View.VISIBLE);
         soccerView.setAnimStart(false);
