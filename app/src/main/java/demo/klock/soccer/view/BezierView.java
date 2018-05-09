@@ -1,6 +1,10 @@
 package demo.klock.soccer.view;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.ViewDragHelper;
@@ -11,6 +15,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import demo.klock.soccer.util.DensityUtil;
 import soccer.klock.demo.soccerdemo.R;
 
 /**
@@ -24,8 +29,12 @@ public class BezierView extends RelativeLayout {
     private int finalLeft = -1, finalTop = -1;
     private ImageView ivStart, ivEnd, ivStartControl, ivEndControl;
     private RelativeLayout       rlContent;
-    private PathView             pathView;
     private OnPathUpdateListener listener;
+
+    private Paint pathPaint, startPaint, endPaint;
+    private int[] startPoint, endPoint, startControlPoint, endControlPoint;
+    private int   isPathVisible;
+
 
     public interface OnPathUpdateListener {
         void onPathUpdate (int startX, int startY, int startControlX, int startControlY,
@@ -50,13 +59,17 @@ public class BezierView extends RelativeLayout {
     }
 
     private void init (Context context) {
+        setWillNotDraw(false);  // 告诉ViewGroup需要绘制以调用onDraw方法
         View view = LayoutInflater.from(context).inflate(R.layout.bezier_layout, this, true);
         ivStart = view.findViewById(R.id.iv_start);
         ivEnd = view.findViewById(R.id.iv_end);
         ivStartControl = view.findViewById(R.id.iv_start_control);
         ivEndControl = view.findViewById(R.id.iv_end_control);
         rlContent = view.findViewById(R.id.rl_content);
-        pathView = view.findViewById(R.id.path_view);
+
+        startPaint = buildPaint(getResources().getColor(R.color.start_control_point), 1);
+        pathPaint = buildPaint(Color.GREEN, 3);
+        endPaint = buildPaint(getResources().getColor(R.color.end_control_point), 1);
 
         dragHelper = ViewDragHelper.create(rlContent, 1f, new ViewDragHelper.Callback() {
 
@@ -114,12 +127,20 @@ public class BezierView extends RelativeLayout {
                     finalLeft = getWidth() - viewWidth;
                 }
                 dragHelper.settleCapturedViewAt(finalLeft, finalTop);
-                updatePath();
+                onPathUpdate();
             }
         });
     }
 
-    private void updatePath () {
+    public void setPathVisible (int pathVisible) {
+        isPathVisible = pathVisible;
+        ivStart.setVisibility(pathVisible);
+        ivStartControl.setVisibility(pathVisible);
+        ivEndControl.setVisibility(pathVisible);
+        invalidate();
+    }
+
+    private void onPathUpdate () {
         if (listener != null) {
             listener.onPathUpdate(getCenterPoint(ivStart)[0], getCenterPoint(ivStart)[1],
                     getCenterPoint(ivStartControl)[0], getCenterPoint(ivStartControl)[1],
@@ -131,22 +152,45 @@ public class BezierView extends RelativeLayout {
     @Override
     protected void onLayout (boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        refreshPathView();
+        onPathUpdate();
+    }
+
+    private Paint buildPaint (int color, int widthDp) {
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(color);
+        paint.setStrokeWidth(DensityUtil.convertDpToPx(this, widthDp));
+        return paint;
     }
 
     @Override
-    public void invalidate () {
-        super.invalidate();
-        refreshPathView();
+    protected void onDraw (Canvas canvas) {
+        super.onDraw(canvas);
+        if (isPathVisible != VISIBLE) {
+            return;
+        }
+        try {
+            startPoint = getCenterPoint(ivStart);
+            endPoint = getCenterPoint(ivEnd);
+            startControlPoint = getCenterPoint(ivStartControl);
+            endControlPoint = getCenterPoint(ivEndControl);
+
+            Path path = new Path();
+            path.moveTo(startPoint[0], startPoint[1]);
+            path.cubicTo(startControlPoint[0], startControlPoint[1], endControlPoint[0], endControlPoint[1], endPoint[0], endPoint[1]);
+            canvas.drawPath(path, pathPaint);
+            canvas.drawLine(startPoint[0], startPoint[1], startControlPoint[0], startControlPoint[1], startPaint);
+            canvas.drawLine(endPoint[0], endPoint[1], endControlPoint[0], endControlPoint[1], endPaint);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void refreshPathView () {
-        pathView.setPoints(getCenterPoint(ivStart)[0], getCenterPoint(ivStart)[1],
-                getCenterPoint(ivStartControl)[0], getCenterPoint(ivStartControl)[1],
-                getCenterPoint(ivEnd)[0], getCenterPoint(ivEnd)[1],
-                getCenterPoint(ivEndControl)[0], getCenterPoint(ivEndControl)[1]);
-    }
-
+    /**
+     * 获取view中心点坐标
+     */
     private int[] getCenterPoint (View v) {
         return new int[]{(v.getLeft() + v.getRight()) / 2, (v.getTop() + v.getBottom()) / 2};
     }

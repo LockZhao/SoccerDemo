@@ -107,29 +107,17 @@ public class SoccerView extends SurfaceView implements SurfaceHolder.Callback, R
                 continue;
             }
 
-            /**取得更新之前的时间**/
             long startTime = System.currentTimeMillis();
-
             synchronized (holder) {
-                /**拿到当前画布 然后锁定**/
                 canvas = holder.lockCanvas();
-
                 drawView();
-
-                /**绘制结束后解锁显示在屏幕上**/
                 holder.unlockCanvasAndPost(canvas);
             }
-
-            /**取得更新结束的时间**/
             long endTime = System.currentTimeMillis();
 
-            /**计算出一次更新的毫秒数**/
             int diffTime = (int) (endTime - startTime);
-
-            /**确保帧数**/
             while (diffTime <= TIME_PER_FRAME) {
                 diffTime = (int) (System.currentTimeMillis() - startTime);
-                /**线程等待**/
                 Thread.yield();
             }
         }
@@ -144,8 +132,10 @@ public class SoccerView extends SurfaceView implements SurfaceHolder.Callback, R
         Matrix matrix = new Matrix();
         int offsetX = bmp.getWidth() / 2;
         int offsetY = bmp.getHeight() / 2;
+        // 先中心旋转
         matrix.postTranslate(-offsetX, -offsetY);
         matrix.postRotate(rotation);
+        // 再移动到对应路径点
         matrix.postTranslate(pathPoint.mX + offsetX, pathPoint.mY + offsetY);
         canvas.drawBitmap(bmp, matrix, null);
     }

@@ -5,11 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <demo.klock.soccer.view.PathView
-        android:id="@+id/path_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
     <ImageView
         android:id="@+id/iv_start"
         android:layout_width="@dimen/point_view_size"

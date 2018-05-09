@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     private BezierView   bazierView;
     private SoccerView   soccerView;
     private TextView     tvStart;
-//    private ImageView    ivSoccer;
     private AnimatorPath path;
     private TextView     tvRatio;
 
@@ -35,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
         bazierView = findViewById(R.id.bazier_view);
         soccerView = findViewById(R.id.soccer_view);
         tvStart = findViewById(R.id.tv_start);
-//        ivSoccer = findViewById(R.id.iv_soccer);
         tvRatio = findViewById(R.id.tv_ratio);
 
         /*soccerView.setZOrderOnTop(true);
@@ -44,14 +42,13 @@ public class MainActivity extends AppCompatActivity {
         bazierView.setOnPathUpdateListener(new BezierView.OnPathUpdateListener() {
             @Override
             public void onPathUpdate (int startX, int startY, int startControlX, int startControlY, int endX, int endY, int endControlX, int endControlY) {
-                int xOffset = (int)getResources().getDimension(R.dimen.soccer_size) / 2;
-                int yOffset = (int)getResources().getDimension(R.dimen.soccer_size) / 2;
+                int xOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
+                int yOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
                 path = new AnimatorPath();
                 path.moveTo(startX - xOffset, startY - yOffset);
                 path.thirdBesselCurveTo(startControlX - xOffset, startControlY - yOffset,
                         endControlX - xOffset, endControlY - yOffset,
                         endX - xOffset, endY - yOffset);
-//                ivSoccer.setVisibility(View.GONE);
 
                 double delta = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
                 String[] ratios = new String[4];
@@ -74,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick (View v) {
                 if (path == null)
                     return;
-//                ivSoccer.setVisibility(View.VISIBLE);
                 startAnimatorPath(soccerView, "pathPoint", path);
             }
         });
@@ -82,32 +78,27 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAnimatorPath (View view, String propertyName, AnimatorPath path) {
         ObjectAnimator anim1 = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), path.getPoints().toArray());
-        anim1.setInterpolator(new DecelerateInterpolator());
+        anim1.setInterpolator(new AccelerateDecelerateInterpolator());
         ObjectAnimator anim2 = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
         anim2.setInterpolator(new LinearInterpolator());
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playTogether(anim1, anim2);
-        animatorSet.setDuration(2000);
+        animatorSet.setDuration(DURATION);
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart (Animator animation) {
-                Log.i("TIME_INTERVAL", "onAnimationStart: ");
-                bazierView.setVisibility(View.GONE);
-                soccerView.setAnimStart(true);
+                onAnimationBegin();
             }
 
             @Override
             public void onAnimationEnd (Animator animation) {
-                Log.i("TIME_INTERVAL", "onAnimationEnd: ");
-                bazierView.setVisibility(View.VISIBLE);
-                soccerView.setAnimStart(false);
+                onAnimationStop();
             }
 
             @Override
             public void onAnimationCancel (Animator animation) {
-                bazierView.setVisibility(View.VISIBLE);
-                soccerView.setAnimStart(false);
+                onAnimationStop();
             }
 
             @Override
@@ -116,6 +107,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         animatorSet.start();
+    }
 
+    private void onAnimationBegin () {
+        Log.i("TIME_INTERVAL", "onAnimationStart: ");
+        bazierView.setPathVisible(View.INVISIBLE);
+        soccerView.setAnimStart(true);
+    }
+
+    private void onAnimationStop () {
+        Log.i("TIME_INTERVAL", "onAnimationStop: ");
+        bazierView.setPathVisible(View.VISIBLE);
+        soccerView.setAnimStart(false);
     }
 }
