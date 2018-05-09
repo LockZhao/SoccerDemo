@@ -51,19 +51,17 @@ public class MainActivity extends AppCompatActivity {
                         endControlX - xOffset, endControlY - yOffset,
                         endX - xOffset, endY - yOffset);
 
+//                path.lineTo(200, 200);
+
                 double delta = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
                 String[] ratios = new String[4];
-                ratios[0] = formatDouble((startControlX - startX) / delta);
-                ratios[1] = formatDouble((startControlY - startY) / delta);
-                ratios[2] = formatDouble((endControlX - startX) / delta);
-                ratios[3] = formatDouble((endControlY - startY) / delta);
+                ratios[0] = formatDouble((startControlX - startX) / delta, 3);
+                ratios[1] = formatDouble((startControlY - startY) / delta, 3);
+                ratios[2] = formatDouble((endControlX - startX) / delta, 3);
+                ratios[3] = formatDouble((endControlY - startY) / delta, 3);
                 String str = String.format("(%s,%s,%s,%s)", ratios[0], ratios[1], ratios[2], ratios[3]);
                 Log.i("ratio", str);
                 tvRatio.setText(str);
-            }
-
-            public String formatDouble (double v) {
-                return new BigDecimal(v).setScale(3, BigDecimal.ROUND_HALF_UP).toString();
             }
         });
 
@@ -127,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick (View v) {
                 double score = 100 - Math.abs(System.currentTimeMillis() - startTime - DURATION) / 1.5d;
-                tvScore.setText("Score: " + new BigDecimal(score < 0 ? 0 : score).setScale(1, BigDecimal.ROUND_HALF_UP).toString());
+                tvScore.setText("Score: " + formatDouble(score < 0 ? 0 : score, 1));
                 tvScore.setVisibility(View.VISIBLE);
                 if (animation.isRunning()) {
                     animation.cancel();
@@ -141,5 +139,9 @@ public class MainActivity extends AppCompatActivity {
         Log.i("TIME_INTERVAL", "onAnimationStop: ");
         bazierView.setPathVisible(View.VISIBLE);
         soccerView.setAnimStart(false);
+    }
+
+    public String formatDouble (double v, int scale) {
+        return new BigDecimal(v).setScale(scale, BigDecimal.ROUND_HALF_UP).toString();
     }
 }
