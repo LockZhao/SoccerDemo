@@ -171,21 +171,17 @@ public class BezierView extends RelativeLayout {
         if (isPathVisible != VISIBLE) {
             return;
         }
-        try {
-            startPoint = getCenterPoint(ivStart);
-            endPoint = getCenterPoint(ivEnd);
-            startControlPoint = getCenterPoint(ivStartControl);
-            endControlPoint = getCenterPoint(ivEndControl);
+        startPoint = getCenterPoint(ivStart);
+        endPoint = getCenterPoint(ivEnd);
+        startControlPoint = getCenterPoint(ivStartControl);
+        endControlPoint = getCenterPoint(ivEndControl);
 
-            Path path = new Path();
-            path.moveTo(startPoint[0], startPoint[1]);
-            path.cubicTo(startControlPoint[0], startControlPoint[1], endControlPoint[0], endControlPoint[1], endPoint[0], endPoint[1]);
-            canvas.drawPath(path, pathPaint);
-            canvas.drawLine(startPoint[0], startPoint[1], startControlPoint[0], startControlPoint[1], startPaint);
-            canvas.drawLine(endPoint[0], endPoint[1], endControlPoint[0], endControlPoint[1], endPaint);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Path path = new Path();
+        path.moveTo(startPoint[0], startPoint[1]);
+        path.cubicTo(startControlPoint[0], startControlPoint[1], endControlPoint[0], endControlPoint[1], endPoint[0], endPoint[1]);
+        canvas.drawPath(path, pathPaint);
+        canvas.drawLine(startPoint[0], startPoint[1], startControlPoint[0], startControlPoint[1], startPaint);
+        canvas.drawLine(endPoint[0], endPoint[1], endControlPoint[0], endControlPoint[1], endPaint);
     }
 
     /**

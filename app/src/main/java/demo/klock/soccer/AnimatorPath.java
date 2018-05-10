@@ -1,7 +1,6 @@
 package demo.klock.soccer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -58,7 +57,7 @@ public class AnimatorPath {
      *
      * @return  返回移动动作集合
      */
-    public Collection<PathPoint> getPoints(){
+    public List<PathPoint> getPoints(){
         return mPoints;
     }
 }
