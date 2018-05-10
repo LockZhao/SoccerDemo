@@ -3,11 +3,11 @@ package demo.klock.soccer;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.TimeInterpolator;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
@@ -81,14 +81,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAnimatorPath (View view, String propertyName, AnimatorPath path) {
-        ObjectAnimator anim1 = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), path.getPoints().toArray());
-        anim1.setInterpolator(new AccelerateDecelerateInterpolator());
-        ObjectAnimator anim2 = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
-        anim2.setInterpolator(new LinearInterpolator());
+        // 贝塞尔曲线路径动画
+        PathEvaluator pathEvaluator = new PathEvaluator();
+        TimeInterpolator interpolator = new LinearInterpolator();
+        ObjectAnimator pathAnim = ObjectAnimator.ofObject(view, propertyName, pathEvaluator, path.getPoints().toArray());
+        pathAnim.setInterpolator(interpolator);
+        pathAnim.setDuration(DURATION);
 
+        // 贝塞尔曲线结束后的路径动画， 先取得95%时间位置点的位置，计算最后5% Duration里的足球移动速率
+        // 之后根据贝塞尔曲线终点切线（控制点）的反方向计算出延伸出屏幕外的动画及持续时间
+        float mid = 0.95f;
+        PathPoint endPoint = path.getPoints().get(1);
+        PathPoint midPoint = pathEvaluator.evaluate(interpolator.getInterpolation(mid), path.getPoints().get(0), endPoint);
+        int offset = (int) getResources().getDimension(R.dimen.soccer_size);
+        PathPoint vanishPoint = calVanishPoint(view.getLeft() - offset, view.getTop() - offset, view.getRight(), view.getBottom(), midPoint, endPoint);
+        int vanishDuration = (int)(DURATION * (distanceBetween(vanishPoint.mX, vanishPoint.mY, endPoint.mX, endPoint.mY)
+                / distanceBetween(vanishPoint.mX, vanishPoint.mY, endPoint.mX, endPoint.mY)));
+        AnimatorPath vanishPath = new AnimatorPath();
+        vanishPath.moveTo(endPoint.mX, endPoint.mY);
+        vanishPath.lineTo(0, 0);
+        ObjectAnimator vanishAnim = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), vanishPath.getPoints().toArray());
+        vanishAnim.setInterpolator(new LinearInterpolator());
+        vanishAnim.setDuration(vanishDuration);
+
+        // 旋转动画
+        ObjectAnimator rotateAnim = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
+        rotateAnim .setInterpolator(new LinearInterpolator());
+        rotateAnim.setDuration(DURATION + vanishDuration);
+
+        // 两个路径动画的播放集合
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playTogether(anim1, anim2);
-        animatorSet.setDuration(DURATION);
+        animatorSet.playSequentially(pathAnim, vanishAnim);
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart (Animator animation) {
@@ -110,7 +133,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
         animatorSet.start();
+        rotateAnim.start();
     }
 
     private void onAnimationBegin (final Animator animation) {
@@ -139,6 +164,20 @@ public class MainActivity extends AppCompatActivity {
         Log.i("TIME_INTERVAL", "onAnimationStop: ");
         bazierView.setPathVisible(View.VISIBLE);
         soccerView.setAnimStart(false);
+    }
+
+    /**
+     * 给定一个区域的四个l、t、r、b坐标值，及区域内两点p1、p2,计算两点的延长线于区域四周的交点坐标
+     */
+    private PathPoint calVanishPoint (float left, float top, float right, float bottom, PathPoint p1, PathPoint p2) {
+        return PathPoint.moveTo(0, 0);
+    }
+
+    /**
+     * 计算两点间距离
+     */
+    private double distanceBetween (float p1x, float p1y, float p2x, float p2y) {
+        return Math.sqrt(Math.pow(Math.abs(p1x - p2x), 2) + Math.pow(Math.abs(p1y - p2y), 2));
     }
 
     public String formatDouble (double v, int scale) {
