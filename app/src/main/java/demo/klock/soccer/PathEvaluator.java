@@ -2,6 +2,7 @@ package demo.klock.soccer;
 
 
 import android.animation.TypeEvaluator;
+import android.util.Log;
 
 /**
  * Created by zhengliang on 2016/10/15 0015.
@@ -11,13 +12,14 @@ import android.animation.TypeEvaluator;
 public class PathEvaluator implements TypeEvaluator<PathPoint> {
 
     /**
-     * @param t          :执行的百分比
+     * @param t          : 执行的百分比
      * @param startValue : 起点
      * @param endValue   : 终点
      * @return
      */
     @Override
     public PathPoint evaluate(float t, PathPoint startValue, PathPoint endValue) {
+        Log.i("PathEvaluator", "evaluate: t= " + t + "   " + startValue.toString() + "   " + endValue.toString());
         float x, y;
         float oneMiunsT = 1 - t;
         //三阶贝塞尔曲线

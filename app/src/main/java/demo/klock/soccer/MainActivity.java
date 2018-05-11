@@ -131,8 +131,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAnimatorPath (View view, String propertyName, AnimatorPath path) {
+        double bazierLength = bazierView.getPathLength();
+        double lineLength = distanceBetween(path.getPoints().get(1).mX, path.getPoints().get(1).mY, path.getPoints().get(2).mX, path.getPoints().get(2).mY);
+        double ratio = bazierLength / (bazierLength + lineLength);
+
         ObjectAnimator anim1 = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), path.getPoints().toArray());
-        anim1.setInterpolator(new LinearInterpolator());
+        anim1.setInterpolator(new CustomInterpolator((float)ratio));
         ObjectAnimator anim2 = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
         anim2.setInterpolator(new LinearInterpolator());
 

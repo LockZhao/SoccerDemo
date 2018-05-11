@@ -10,9 +10,22 @@ import android.view.animation.LinearInterpolator;
  */
 public class CustomInterpolator extends LinearInterpolator {
 
+    float ratio;
+
+    public CustomInterpolator (float ratio) {
+        Log.i("CustomInterpolator", "ratio: " + ratio);
+        this.ratio = ratio;
+    }
+
     @Override
     public float getInterpolation (float input) {
-        Log.i("Interpolator", "getInterpolation: " + input);
+        float ori = input;
+        if (input < ratio) {
+            input = input * (0.5f / ratio);
+        } else {
+            input = (input - ratio) * ((1 - 0.5f) / (1 - ratio)) + 0.5f;
+        }
+        Log.i("CustomInterpolator", ori + " --> " + input);
         return super.getInterpolation(input);
     }
 }
