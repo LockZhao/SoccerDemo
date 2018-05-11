@@ -19,7 +19,7 @@ import soccer.klock.demo.soccerdemo.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int DURATION = 2000;
+    private static final int DURATION = 1200;
 
     private BezierView bazierView;
     private SoccerView soccerView;
