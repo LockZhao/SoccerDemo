@@ -10,7 +10,7 @@ import android.view.animation.LinearInterpolator;
  */
 public class CustomInterpolator extends LinearInterpolator {
 
-    float ratio;
+    private float ratio;
 
     public CustomInterpolator (float ratio) {
         Log.i("CustomInterpolator", "ratio: " + ratio);
@@ -19,6 +19,7 @@ public class CustomInterpolator extends LinearInterpolator {
 
     @Override
     public float getInterpolation (float input) {
+        // 两段路径，在返回0.5的时候会切换，由于两段路径的长度不一样，为了保证动画速率一致，需要根据路径转换点的位置ratio变换时间轴
         float ori = input;
         if (input < ratio) {
             input = input * (0.5f / ratio);
