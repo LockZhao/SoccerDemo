@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.ViewDragHelper;
@@ -34,6 +35,7 @@ public class BezierView extends RelativeLayout {
     private Paint pathPaint, startPaint, endPaint;
     private int[] startPoint, endPoint, startControlPoint, endControlPoint;
     private int   isPathVisible;
+    private Path path;
 
 
     public interface OnPathUpdateListener {
@@ -132,6 +134,13 @@ public class BezierView extends RelativeLayout {
         });
     }
 
+    public double getPathLength () {
+        if (path != null) {
+            return new PathMeasure(path, false).getLength();
+        }
+        return 0;
+    }
+
     public void setPathVisible (int pathVisible) {
         isPathVisible = pathVisible;
         ivStart.setVisibility(pathVisible);
@@ -176,7 +185,7 @@ public class BezierView extends RelativeLayout {
         startControlPoint = getCenterPoint(ivStartControl);
         endControlPoint = getCenterPoint(ivEndControl);
 
-        Path path = new Path();
+        path = new Path();
         path.moveTo(startPoint[0], startPoint[1]);
         path.cubicTo(startControlPoint[0], startControlPoint[1], endControlPoint[0], endControlPoint[1], endPoint[0], endPoint[1]);
         canvas.drawPath(path, pathPaint);

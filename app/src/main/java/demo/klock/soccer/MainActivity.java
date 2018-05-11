@@ -19,7 +19,7 @@ import soccer.klock.demo.soccerdemo.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int DURATION = 1500;
+    private static final int DURATION = 2000;
 
     private BezierView bazierView;
     private SoccerView soccerView;
@@ -53,16 +53,10 @@ public class MainActivity extends AppCompatActivity {
                 String str = String.format("(%s,%s,%s,%s)", ratios[0], ratios[1], ratios[2], ratios[3]);
                 tvRatio.setText(str);
 
-                // 计算贝塞尔曲线路径
+                // 计算曲线结束后的消失点
                 int xOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
                 int yOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
-                path = new AnimatorPath();
-                path.moveTo(startX - xOffset, startY - yOffset);
-                path.thirdBesselCurveTo(startControlX - xOffset, startControlY - yOffset,
-                        endControlX - xOffset, endControlY - yOffset,
-                        endX - xOffset, endY - yOffset);
 
-                // 计算曲线结束后的消失路径
                 int left = soccerView.getLeft() - xOffset * 2;
                 int top = soccerView.getTop() - yOffset * 2;
                 int right = soccerView.getRight();
@@ -82,6 +76,13 @@ public class MainActivity extends AppCompatActivity {
                         vanishPoint = calVanishPoint(endControlX, endControlY, endX, endY, right, bottom);
                     }
                 }
+
+                // 构建AnimatorPath路径，并赋值节点所在位置的长度百分比
+                path = new AnimatorPath();
+                path.moveTo(startX - xOffset, startY - yOffset);
+                path.thirdBesselCurveTo(startControlX - xOffset, startControlY - yOffset,
+                        endControlX - xOffset, endControlY - yOffset,
+                        endX - xOffset, endY - yOffset);
                 path.lineTo(vanishPoint[0], vanishPoint[1]);
             }
         });
