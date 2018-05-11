@@ -7,23 +7,23 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
 import java.math.BigDecimal;
 
+import demo.klock.soccer.util.DensityUtil;
 import demo.klock.soccer.view.BezierView;
 import demo.klock.soccer.view.SoccerView;
 import soccer.klock.demo.soccerdemo.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int DURATION = 1000;
+    private static final int DURATION = 1500;
 
-    private BezierView   bazierView;
-    private SoccerView   soccerView;
-    private TextView     tvStart, tvScore, tvRatio;
+    private BezierView bazierView;
+    private SoccerView soccerView;
+    private TextView   tvStart, tvScore, tvRatio;
     private AnimatorPath path;
 
     @Override
@@ -43,6 +43,17 @@ public class MainActivity extends AppCompatActivity {
         bazierView.setOnPathUpdateListener(new BezierView.OnPathUpdateListener() {
             @Override
             public void onPathUpdate (int startX, int startY, int startControlX, int startControlY, int endX, int endY, int endControlX, int endControlY) {
+                // 显示贝塞尔曲线四个点位的坐标
+                double delta = distanceBetween(endX, startX, endY, startY);
+                String[] ratios = new String[4];
+                ratios[0] = formatDouble((startControlX - startX) / delta, 3);
+                ratios[1] = formatDouble((startControlY - startY) / delta, 3);
+                ratios[2] = formatDouble((endControlX - startX) / delta, 3);
+                ratios[3] = formatDouble((endControlY - startY) / delta, 3);
+                String str = String.format("(%s,%s,%s,%s)", ratios[0], ratios[1], ratios[2], ratios[3]);
+                tvRatio.setText(str);
+
+                // 计算贝塞尔曲线路径
                 int xOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
                 int yOffset = (int) getResources().getDimension(R.dimen.soccer_size) / 2;
                 path = new AnimatorPath();
@@ -51,21 +62,59 @@ public class MainActivity extends AppCompatActivity {
                         endControlX - xOffset, endControlY - yOffset,
                         endX - xOffset, endY - yOffset);
 
-//                path.lineTo(200, 200);
+                // 计算曲线结束后的消失路径
+                int left = soccerView.getLeft() - xOffset * 2;
+                int top = soccerView.getTop() - yOffset * 2;
+                int right = soccerView.getRight();
+                int bottom = soccerView.getBottom();
 
-                double delta = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-                String[] ratios = new String[4];
-                ratios[0] = formatDouble((startControlX - startX) / delta, 3);
-                ratios[1] = formatDouble((startControlY - startY) / delta, 3);
-                ratios[2] = formatDouble((endControlX - startX) / delta, 3);
-                ratios[3] = formatDouble((endControlY - startY) / delta, 3);
-                String str = String.format("(%s,%s,%s,%s)", ratios[0], ratios[1], ratios[2], ratios[3]);
-                Log.i("ratio", str);
-                tvRatio.setText(str);
+                float[] vanishPoint;
+                if (endControlX > endX) {
+                    if (endControlY > endY) {
+                        vanishPoint = calVanishPoint(endControlX, endControlY, endX, endY, left, top);
+                    } else {
+                        vanishPoint = calVanishPoint(endControlX, endControlY, endX, endY, left, bottom);
+                    }
+                } else {
+                    if (endControlY > endY) {
+                        vanishPoint = calVanishPoint(endControlX, endControlY, endX, endY, right, top);
+                    } else {
+                        vanishPoint = calVanishPoint(endControlX, endControlY, endX, endY, right, bottom);
+                    }
+                }
+                path.lineTo(vanishPoint[0], vanishPoint[1]);
             }
         });
 
         initStartBtn();
+    }
+
+    /**
+     * 计算路径消失点坐标
+     */
+    private float[] calVanishPoint (float p1X, float p1Y, float p2X, float p2Y, float vanishX, float vanishY) {
+        float[] vanishPoint = new float[2];
+        if (p1X == p2X) {
+            vanishPoint[0] = p1X;
+            vanishPoint[1] = vanishY;
+        } else if (p1Y == p2Y) {
+            vanishPoint[0] = vanishX;
+            vanishPoint[1] = p1Y;
+        } else {
+            float ratio = (p2Y - p1Y) / (p2X - p1X);
+            float diffX = Math.abs(p2X - vanishX);
+            float diffY = Math.abs(p2Y - vanishY);
+            if (Math.abs(diffX * ratio) < diffY) {
+                ratio = (p2Y - p1Y) / Math.abs(p2X - p1X);
+                vanishPoint[0] = vanishX;
+                vanishPoint[1] = p2Y + diffX * ratio;
+            } else {
+                ratio = Math.abs(p2Y - p1Y) / (p2X - p1X);
+                vanishPoint[0] = p2X + diffY / ratio;
+                vanishPoint[1] = vanishY;
+            }
+        }
+        return vanishPoint;
     }
 
     private void initStartBtn () {
@@ -82,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAnimatorPath (View view, String propertyName, AnimatorPath path) {
         ObjectAnimator anim1 = ObjectAnimator.ofObject(view, propertyName, new PathEvaluator(), path.getPoints().toArray());
-        anim1.setInterpolator(new AccelerateDecelerateInterpolator());
+        anim1.setInterpolator(new LinearInterpolator());
         ObjectAnimator anim2 = ObjectAnimator.ofFloat(view, "rotation", 0, 3600);
         anim2.setInterpolator(new LinearInterpolator());
 
@@ -115,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void onAnimationBegin (final Animator animation) {
         Log.i("TIME_INTERVAL", "onAnimationStart: ");
-        final long startTime = System.currentTimeMillis();
         bazierView.setPathVisible(View.INVISIBLE);
         soccerView.setAnimStart(true);
 
@@ -124,7 +172,13 @@ public class MainActivity extends AppCompatActivity {
         tvStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
-                double score = 100 - Math.abs(System.currentTimeMillis() - startTime - DURATION) / 1.5d;
+                double score = 0;
+                if (path != null && soccerView.getPathPoint() != null) {
+                    PathPoint endPoint = path.getPoints().get(1);
+                    double distance = distanceBetween(endPoint.mX, endPoint.mY, soccerView.getPathPoint().mX, soccerView.getPathPoint().mY);
+                    double range = DensityUtil.convertDpToPx(v, 40);
+                    score = (range - distance) * (100 / range);
+                }
                 tvScore.setText("Score: " + formatDouble(score < 0 ? 0 : score, 1));
                 tvScore.setVisibility(View.VISIBLE);
                 if (animation.isRunning()) {
@@ -139,6 +193,13 @@ public class MainActivity extends AppCompatActivity {
         Log.i("TIME_INTERVAL", "onAnimationStop: ");
         bazierView.setPathVisible(View.VISIBLE);
         soccerView.setAnimStart(false);
+    }
+
+    /**
+     * 计算两点间距离
+     */
+    private double distanceBetween (float p1x, float p1y, float p2x, float p2y) {
+        return Math.sqrt(Math.pow(Math.abs(p1x - p2x), 2) + Math.pow(Math.abs(p1y - p2y), 2));
     }
 
     public String formatDouble (double v, int scale) {

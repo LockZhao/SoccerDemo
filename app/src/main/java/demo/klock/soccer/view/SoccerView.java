@@ -67,6 +67,10 @@ public class SoccerView extends SurfaceView implements SurfaceHolder.Callback, R
         this.pathPoint = pathPoint;
     }
 
+    public PathPoint getPathPoint () {
+        return pathPoint;
+    }
+
     /**
      * 由ObjectAnimator.ofFloat方法回调
      */
